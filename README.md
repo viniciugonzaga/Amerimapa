@@ -25,34 +25,34 @@ Equipe: Sofia de Oliveira · Vinícius Gonzaga · Mariana Rigueiro · Matheus Me
 
 **Não precisa de Node/npm**: o front é Blade + CSS + JavaScript puros em `public/`.
 
-## 2. Comandos para rodar (copie e cole no terminal)
+## 2. Comandos para rodar (Windows + XAMPP/phpMyAdmin)
 
-```bash
-# 1) dependências PHP
-composer install
+O `.env` já vem pronto para o MySQL do XAMPP: banco `amerimapa`, usuário `root`, senha vazia, `127.0.0.1:3306`.
+Se o seu MySQL tiver senha, preencha `DB_PASSWORD` no `.env`.
 
-# 2) configuração
-cp .env.example .env            # no Windows (PowerShell): copy .env.example .env
-php artisan key:generate
-```
+1. No XAMPP, ligue **Apache** e **MySQL**.
+2. No phpMyAdmin (http://localhost/phpmyadmin) crie o banco **`amerimapa`** com agrupamento **`utf8mb4_unicode_ci`**.
+3. Escolha **um** jeito de criar as tabelas:
 
-Edite o `.env` com o seu MySQL (`DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) e crie o banco:
+   **Opção A — pelo Laravel (recomendado):**
+   ```powershell
+   composer install
+   php artisan migrate --seed
+   ```
 
-```bash
-mysql -u root -p -e "CREATE DATABASE amerimapa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
+   **Opção B — importando no phpMyAdmin:** selecione o banco `amerimapa` → aba **Importar** →
+   arquivo `database/amerimapa_completo.sql` → Executar. Já vem com estrutura + todos os dados de demonstração.
+   Depois rode só `composer install`.
 
-```bash
-# 3) tabelas + conteúdo + dados de demonstração
-php artisan migrate --seed
+4. Suba o servidor:
+   ```powershell
+   php artisan serve
+   ```
+   Abra **http://127.0.0.1:8000**.
 
-# 4) subir o servidor (use 4 workers: as telas fazem polling do mapa em tempo real)
-php artisan serve
-```
+Para recomeçar o banco do zero a qualquer momento: `php artisan migrate:fresh --seed`.
 
-Abra **http://localhost:8000**.
-
-> Quer testar sem MySQL? No `.env` use `DB_CONNECTION=sqlite`, apague a linha `DB_DATABASE` e rode `php artisan migrate --seed` (o Laravel cria `database/database.sqlite`).
+> Se trocar de máquina, gere uma nova chave com `php artisan key:generate`. Não suba o `.env` para o GitHub (ele já está no `.gitignore`).
 
 ### Contas de demonstração (senha `amerimapa123`)
 
@@ -129,7 +129,7 @@ php vendor/bin/phpunit
 
 ## 5. Banco de dados
 
-Migrations em `database/migrations` (e o script equivalente para MySQL em `database/amerimapa_mysql.sql`).
+Migrations em `database/migrations`. Para o phpMyAdmin há o `database/amerimapa_completo.sql` (estrutura + dados de demonstração).
 
 | Tabela | Do documento | Observação |
 |---|---|---|
@@ -180,7 +180,7 @@ app/
   Http/Middleware/   AuthenticateApi, RequireStaff, AuthenticateDevice, EnsureRole, EnsurePlayerOrGuest
   Console/Commands/SimulateMap.php   simulador do mapa (php artisan amerimapa:mapa)
   Models/            Eloquent (GameMatch = tabela matches; "match" é palavra reservada no PHP)
-database/migrations, database/seeders (ContentSeeder = conteúdo, DemoSeeder = demonstração), database/amerimapa_mysql.sql
+database/migrations, database/seeders (ContentSeeder = conteúdo, DemoSeeder = demonstração), database/amerimapa_completo.sql
 resources/views/     layouts, components, partials (mapa SVG das Américas), auth, student, teacher, pages
 public/css/amerimapa.css, public/js/amerimapa.js   front sem build (cliente da API, mapa, gráficos, voz)
 routes/api.php, routes/web.php
