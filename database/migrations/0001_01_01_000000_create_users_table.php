@@ -4,21 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * jogadores (players): alunos, professores e administradores. RN01
+ * Mesmo nome de tabela/colunas da API do Matheus (Prisma), mais apelido/avatar/turma.
+ */
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('name', 120);
+            $table->string('nickname', 60)->nullable();
+            $table->string('email', 255)->unique();
+            $table->string('password_hash', 255);
+            $table->enum('role', ['STUDENT', 'TEACHER', 'ADMIN'])->default('STUDENT');
+            $table->string('avatar', 40)->default('sol');
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -37,13 +42,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('players');
     }
 };
