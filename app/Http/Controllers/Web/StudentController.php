@@ -27,7 +27,8 @@ class StudentController extends Controller
         $user = $request->user();
 
         return view('student.progress', [
-            's' => $this->stats->studentSummary($user),
+            's' => $this->stats->studentSummary($user, StatsService::period($request->query('periodo'))),
+            'days' => StatsService::period($request->query('periodo')),
             'phases' => $this->progress->playerProgress($user)['phases'],
         ]);
     }
@@ -44,6 +45,9 @@ class StudentController extends Controller
             'unlocked' => collect($list)->where('status', 'UNLOCKED')->count(),
             'points' => $summary['points'],
             'next' => $next,
+            'ranking' => $user->school_class_id
+                ? $this->stats->ranking(\App\Models\User::query()->where('school_class_id', $user->school_class_id)->pluck('id')->all(), 10)
+                : collect(),
         ]);
     }
 }

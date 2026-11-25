@@ -46,7 +46,7 @@
         @forelse ($report as $r)
           @php($s = $r['student'])
           <tr>
-            <td><div class="row"><x-avatar :user="$s" size="sm" /><div><b>{{ $s->name }}</b><div class="tiny muted">{{ $s->email }}</div></div></div></td>
+            <td><div class="row"><x-avatar :user="$s" size="sm" /><div><b>{{ $s->name }}</b> @if(isset($resetRequests[$s->email]))<span class="chip orange tiny"><x-icon name="lock" /> pediu nova senha</span>@endif<div class="tiny muted">{{ $s->email }}</div></div></div></td>
             <td>{{ $r['completed'] }}/{{ $r['matches'] }}</td>
             <td class="bold">{{ number_format($r['points'], 0, ',', '.') }}</td>
             <td>@if($r['accuracy'] !== null)<span class="chip {{ $r['accuracy'] >= 70 ? 'green' : ($r['accuracy'] >= 50 ? 'yellow' : 'red') }}">{{ $r['accuracy'] }}%</span>@else — @endif</td>

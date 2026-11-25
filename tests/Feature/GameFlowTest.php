@@ -126,4 +126,30 @@ class GameFlowTest extends TestCase
         $this->app['auth']->guard()->logout();
         $this->get('/entrar')->assertOk();
     }
+
+    public function test_new_screens_and_flows(): void
+    {
+        $this->seed(\Database\Seeders\DemoSeeder::class);
+        $admin = User::where('role', 'ADMIN')->first();
+        $this->actingAs($admin)->get('/professor/professores')->assertOk()->assertSee('Professores');
+        $this->actingAs($admin)->post('/professor/professores', ['name' => 'João Silva', 'email' => 'joao@x.com', 'password' => 'segredo123', 'role' => 'TEACHER'])->assertRedirect();
+        $this->assertDatabaseHas('players', ['email' => 'joao@x.com', 'role' => 'TEACHER']);
+
+        $teacher = User::where('email', 'mariana@amerimapa.com')->first();
+        $this->actingAs($teacher)->get('/professor/professores')->assertForbidden();
+        $this->actingAs($teacher)->get('/professor?periodo=30')->assertOk()->assertSee('Notificações');
+
+        $this->app['auth']->guard()->logout();
+        $this->post('/esqueci-senha', ['email' => 'sofia@amerimapa.com'])->assertRedirect()->assertSessionHas('status');
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => 'sofia@amerimapa.com']);
+        $this->actingAs($teacher)->get('/professor')->assertSee('pediu uma nova senha');
+
+        $this->app['auth']->guard()->logout();
+        $this->post('/entrar', ['email' => 'sofia@amerimapa.com', 'password' => 'amerimapa123', 'role' => 'teacher'])->assertSessionHasErrors('email');
+        $this->assertGuest();
+        $this->post('/entrar', ['email' => 'sofia@amerimapa.com', 'password' => 'amerimapa123', 'role' => 'student'])->assertRedirect('/inicio');
+        $this->get('/conquistas')->assertOk()->assertSee('Ranking da minha turma');
+        $this->get('/progresso?periodo=15')->assertOk();
+        $this->get('/perfil')->assertOk()->assertSee('images/avatars/menina.png', false)->assertSee('images/Amerimapa.png', false);
+    }
 }

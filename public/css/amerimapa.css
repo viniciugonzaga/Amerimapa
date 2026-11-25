@@ -114,7 +114,7 @@ p { margin: 0 0 .8em; }
 /* ---------- Bottom nav (aluno) ------------------------------------------ */
 .page { padding: 26px 0 110px; }
 .bottomnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(30,64,140,.06); }
-.bottomnav .container { display: grid; grid-template-columns: repeat(4, 1fr); height: 76px; }
+.bottomnav .container { display: grid; grid-template-columns: repeat(5, 1fr); height: 76px; }
 .bottomnav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #7b8aa6; font-weight: 700; font-size: .85rem; text-decoration: none; position: relative; }
 .bottomnav a .icon { width: 28px; height: 28px; }
 .bottomnav a.active { color: var(--blue); }
@@ -401,3 +401,15 @@ body.a11y-high-contrast .map-country { stroke: #000; stroke-width: 1; }
 body.a11y-high-contrast a { text-decoration: underline; }
 body.a11y-reduced-motion *, body.a11y-reduced-motion *::before, body.a11y-reduced-motion *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- Logo e avatares com imagem -------------------------------- */
+.logo img { height: 46px; width: auto; display: block; }
+.logo.lg img { height: 84px; }
+.t-side .logo img { height: 42px; }
+.footer .logo img { height: 32px; }
+img.avatar { object-fit: cover; background: #e8f2ff; padding: 0; }
+.avatar-pick input:checked + .avatar { outline: 4px solid var(--blue); outline-offset: 2px; }
+.avatar-pick input:focus-visible + .avatar { outline: 4px solid var(--yellow); outline-offset: 2px; }
+.avatar-pick .avatar { cursor: pointer; transition: transform .12s; }
+.avatar-pick .avatar:hover { transform: scale(1.08); }
+.badge-dot { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); color: #fff; font-size: .7rem; font-weight: 800; display: grid; place-items: center; }

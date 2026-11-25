@@ -56,7 +56,14 @@ class StatsService
             });
     }
 
-    public function studentSummary(User $user): array
+    public const PERIODS = [7, 15, 30];
+
+    public static function period(mixed $value): int
+    {
+        return in_array((int) $value, self::PERIODS, true) ? (int) $value : 7;
+    }
+
+    public function studentSummary(User $user, int $days = 7): array
     {
         $totals = GameMatch::query()->where('player_id', $user->id)
             ->selectRaw('COALESCE(SUM(total_score),0) as points, COALESCE(SUM(correct_count),0) as correct, COALESCE(SUM(answered_questions),0) as answered')
@@ -83,7 +90,7 @@ class StatsService
             'activities' => $activities,
             'nextMission' => $next,
             'review' => $review,
-            'evolution' => $this->dailyAccuracy(fn ($q) => $q->where('player_id', $user->id)),
+            'evolution' => $this->dailyAccuracy(fn ($q) => $q->where('player_id', $user->id), $days),
             'recentMatches' => GameMatch::query()->where('player_id', $user->id)->with(['mode', 'activity', 'phase'])
                 ->orderByDesc('id')->limit(5)->get(),
         ];
@@ -105,7 +112,7 @@ class StatsService
         $values = [];
         for ($i = 0; $i < $days; $i++) {
             $day = $from->copy()->addDays($i);
-            $labels[] = self::WEEKDAYS[$day->dayOfWeek];
+            $labels[] = $days <= 7 ? self::WEEKDAYS[$day->dayOfWeek] : $day->format('d/m');
             $group = $rows->get($day->toDateString());
             $answered = $group ? $group->sum('answered_questions') : 0;
             $values[] = $answered > 0 ? (int) round($group->sum('correct_count') * 100 / $answered) : null;
@@ -133,7 +140,7 @@ class StatsService
             ->pluck('id')->all();
     }
 
-    public function teacherOverview(User $teacher): array
+    public function teacherOverview(User $teacher, int $days = 7): array
     {
         $classes = $this->classesOf($teacher);
         $studentIds = $this->studentIdsOf($teacher);
@@ -153,7 +160,7 @@ class StatsService
         $series = $classes->map(fn (SchoolClass $c) => [
             'name' => $c->name,
             'color' => $c->color,
-            'values' => $this->dailyAccuracy(fn ($q) => $q->whereIn('player_id', User::query()->where('school_class_id', $c->id)->pluck('id')))['values'],
+            'values' => $this->dailyAccuracy(fn ($q) => $q->whereIn('player_id', User::query()->where('school_class_id', $c->id)->pluck('id')), $days)['values'],
         ])->values()->all();
 
         return [
@@ -168,7 +175,7 @@ class StatsService
                 'accuracy' => $avg,
                 'accuracyDelta' => $avg - $avgBefore,
             ],
-            'chart' => ['labels' => $this->dailyAccuracy(fn ($q) => $q->whereRaw('1 = 0'))['labels'], 'series' => $series],
+            'chart' => ['labels' => $this->dailyAccuracy(fn ($q) => $q->whereRaw('1 = 0'), $days)['labels'], 'series' => $series],
             'recentActivities' => (clone $activityQuery)->with('schoolClass')->latest('id')->limit(3)->get(),
             'ranking' => $this->ranking($studentIds, 5),
             'device' => Device::query()->orderByDesc('last_seen_at')->first(),
@@ -198,6 +205,51 @@ class StatsService
 
                 return $r;
             });
+    }
+
+    /**
+     * Notificações do professor: partidas concluídas pelos alunos, conquistas e mapas desconectados.
+     *
+     * @return Collection<int, array{icon:string,color:string,text:string,at:Carbon,url:?string}>
+     */
+    public function notificationsFor(User $teacher, int $limit = 8): Collection
+    {
+        $ids = $this->studentIdsOf($teacher);
+        $items = collect();
+
+        GameMatch::query()->whereIn('player_id', $ids)->where('status', GameMatch::COMPLETED)
+            ->with(['player', 'activity', 'phase'])->latest('ended_at')->limit($limit)->get()
+            ->each(fn (GameMatch $m) => $items->push([
+                'icon' => 'check-circle', 'color' => 'green',
+                'text' => "{$m->player->name} concluiu ".($m->activity?->title ?? 'a fase '.$m->phase?->number).": {$m->total_score} pts, ".($m->accuracy() ?? 0).'% de acertos',
+                'at' => $m->ended_at ?? $m->started_at,
+                'url' => $m->player->school_class_id ? route('teacher.classes.show', $m->player->school_class_id) : null,
+            ]));
+
+        DB::table('player_achievements')->join('players', 'players.id', '=', 'player_achievements.player_id')
+            ->join('achievements', 'achievements.id', '=', 'player_achievements.achievement_id')
+            ->whereIn('player_achievements.player_id', $ids)->latest('unlocked_at')->limit($limit)
+            ->get(['players.name', 'achievements.name as badge', 'player_achievements.unlocked_at'])
+            ->each(fn ($r) => $items->push([
+                'icon' => 'trophy', 'color' => 'yellow', 'text' => "{$r->name} ganhou a conquista {$r->badge}",
+                'at' => Carbon::parse($r->unlocked_at), 'url' => route('teacher.performance'),
+            ]));
+
+        DB::table('password_reset_tokens')->join('players', 'players.email', '=', 'password_reset_tokens.email')
+            ->whereIn('players.id', $ids)->get(['players.name', 'players.school_class_id', 'password_reset_tokens.created_at'])
+            ->each(fn ($r) => $items->push([
+                'icon' => 'lock', 'color' => 'orange', 'text' => "{$r->name} pediu uma nova senha", 'pinned' => true,
+                'at' => Carbon::parse($r->created_at), 'url' => $r->school_class_id ? route('teacher.classes.show', $r->school_class_id) : null,
+            ]));
+
+        Device::query()->get()->reject->isOnline()->filter(fn ($d) => $d->last_seen_at)
+            ->each(fn (Device $d) => $items->push([
+                'icon' => 'wifi-off', 'color' => 'red', 'text' => "{$d->name} está desconectado",
+                'at' => $d->last_seen_at, 'url' => route('teacher.device'),
+            ]));
+
+        // Pedidos de senha (exigem ação) primeiro; depois o mais recente.
+        return $items->sortByDesc(fn ($n) => (($n['pinned'] ?? false) ? '1' : '0').$n['at']->format('YmdHis'))->take($limit)->values();
     }
 
     /** Relatório por aluno de uma turma (tela Relatórios e exportação CSV). */

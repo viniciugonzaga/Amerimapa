@@ -5,14 +5,14 @@
 <div class="stack">
   <section class="card soft-blue hero-card">
     <div>
-      <h1>Olá, {{ $me->displayName() }}!</h1>
+      <h1 style="font-size:2.4rem">Olá, {{ $me->displayName() }}!</h1>
       <p style="font-size:1.15rem" class="bold muted">Vamos explorar a América hoje?</p>
       <div class="row wrap">
         <a class="btn btn-primary" href="{{ route('activities') }}"><x-icon name="clipboard" /> Ver atividades</a>
         <a class="btn btn-outline" href="{{ route('explore') }}"><x-icon name="compass" /> Explorar o mapa</a>
       </div>
     </div>
-    <div class="art map-box" style="padding:6px">@include('partials.americas-map')</div>
+    <img class="art" src="{{ asset('images/ilustracao-explorar.png') }}" alt="Menina explorando o mapa da América" style="width:300px;border-radius:16px">
   </section>
 
   <div class="grid g-main">
@@ -26,7 +26,7 @@
             <p class="muted">{{ $m->description }}</p>
             <div class="meta"><span><x-icon name="clock" /> {{ $m->estimated_minutes }} min</span><span><x-icon name="star" /> +{{ $m->reward_points }} pontos</span><span><x-icon name="help" /> {{ $m->questions_count }} perguntas</span></div>
           </div>
-          <div class="act"><div class="ico" style="width:72px;height:72px;background:#fff"><x-icon :name="$m->icon" style="width:40px;height:40px" /></div></div>
+          <img src="{{ asset('images/ilustracao-missao.png') }}" alt="" style="width:110px;border-radius:14px">
         </div>
         <a class="btn btn-green btn-block btn-lg" style="margin-top:16px" href="{{ route('play', ['atividade' => $m->id]) }}"><x-icon name="play" class="fill" /> Começar atividade <x-icon name="arrow-right" /></a>
       @else

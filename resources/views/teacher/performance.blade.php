@@ -12,7 +12,7 @@
     <div class="card-title"><h3><x-icon name="crown" /> Ranking {{ $class ? '— '.$class->name : 'geral' }}</h3></div>
     <div class="stack" style="gap:6px">
       @forelse ($ranking as $r)
-        <div class="rank-row"><span class="rank-pos">{{ $r->rank }}</span><span class="avatar sm av-{{ $r->avatar }}">{{ mb_substr($r->name, 0, 1) }}</span>
+        <div class="rank-row"><span class="rank-pos">{{ $r->rank }}</span><x-avatar :key="$r->avatar" :name="$r->name" size="sm" />
           <div class="grow"><b>{{ $r->name }}</b><div class="tiny muted">{{ $r->class_name }} · {{ $r->matches }} partidas · {{ $r->accuracy }}% de acertos</div></div>
           <b>⭐ {{ number_format($r->points, 0, ',', '.') }}</b></div>
       @empty
@@ -22,7 +22,7 @@
   </section>
   <div class="stack">
     <section class="card">
-      <div class="card-title"><h3><x-icon name="chart" /> Acertos por dia</h3></div>
+      <div class="card-title"><h3><x-icon name="chart" /> Acertos por dia</h3>@include('partials.period-select')</div>
       @php($chartData = ['labels' => $chart['labels'], 'series' => [['name' => 'Acertos', 'color' => 'green', 'values' => $chart['values']]]])
       <div class="chart" data-chart='@json($chartData)'></div>
     </section>

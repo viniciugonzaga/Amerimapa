@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Teacher\DashboardController;
 use App\Http\Controllers\Web\Teacher\QuestionController;
 use App\Http\Controllers\Web\Teacher\RegionController;
 use App\Http\Controllers\Web\Teacher\ReportController;
+use App\Http\Controllers\Web\Teacher\TeacherAdminController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Entrada ────────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/cadastro', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/cadastro', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::get('/esqueci-senha', [AuthController::class, 'forgot'])->name('password.request');
+    Route::post('/esqueci-senha', [AuthController::class, 'requestReset'])->name('password.email')->middleware('throttle:5,1');
 });
 Route::post('/visitante', [AuthController::class, 'guest'])->name('guest.start');
 Route::post('/sair', [AuthController::class, 'logout'])->name('logout');
@@ -54,6 +56,12 @@ Route::middleware(['auth', 'player.or.guest'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/buscar', [DashboardController::class, 'search'])->name('search');
         Route::get('/dispositivo', [DashboardController::class, 'device'])->name('device');
+        Route::post('/notificacoes/lidas', [DashboardController::class, 'markNotificationsRead'])->name('notifications.read');
+
+        Route::get('/professores', [TeacherAdminController::class, 'index'])->name('teachers.index');
+        Route::post('/professores', [TeacherAdminController::class, 'store'])->name('teachers.store');
+        Route::put('/professores/{teacher}', [TeacherAdminController::class, 'update'])->name('teachers.update');
+        Route::delete('/professores/{teacher}', [TeacherAdminController::class, 'destroy'])->name('teachers.destroy');
 
         Route::get('/turmas', [ClassController::class, 'index'])->name('classes.index');
         Route::post('/turmas', [ClassController::class, 'store'])->name('classes.store');

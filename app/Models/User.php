@@ -21,7 +21,10 @@ class User extends Authenticatable
     public const ADMIN = 'ADMIN';
     public const ROLES = [self::STUDENT, self::TEACHER, self::ADMIN];
 
-    public const AVATARS = ['sol', 'lua', 'estrela', 'onda', 'folha', 'raio', 'nuvem', 'flor'];
+    /** Avatares ilustrados (public/images/avatars/*.png) + avatares de cor com iniciais. */
+    public const IMAGE_AVATARS = ['menina', 'menino', 'professora'];
+
+    public const AVATARS = ['menina', 'menino', 'professora', 'sol', 'lua', 'estrela', 'onda', 'folha', 'raio', 'nuvem', 'flor'];
 
     protected $table = 'players';
 
@@ -116,6 +119,11 @@ class User extends Authenticatable
         return $this->preferences ?? new PlayerPreference(PlayerPreference::DEFAULTS + ['player_id' => $this->id]);
     }
 
+    public static function avatarUrl(?string $avatar): ?string
+    {
+        return in_array($avatar, self::IMAGE_AVATARS, true) ? asset("images/avatars/{$avatar}.png") : null;
+    }
+
     public function toApi(): array
     {
         return [
@@ -125,6 +133,7 @@ class User extends Authenticatable
             'email' => $this->email,
             'role' => $this->role,
             'avatar' => $this->avatar,
+            'avatarUrl' => self::avatarUrl($this->avatar),
             'schoolClassId' => $this->school_class_id,
             'createdAt' => optional($this->created_at)->toIso8601String(),
             'updatedAt' => optional($this->updated_at)->toIso8601String(),

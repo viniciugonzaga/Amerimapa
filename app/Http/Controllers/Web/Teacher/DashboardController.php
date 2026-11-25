@@ -17,7 +17,9 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
-        return view('teacher.dashboard', ['o' => $this->stats->teacherOverview($request->user())]);
+        $days = StatsService::period($request->query('periodo'));
+
+        return view('teacher.dashboard', ['o' => $this->stats->teacherOverview($request->user(), $days), 'days' => $days]);
     }
 
     public function search(Request $request)
@@ -36,6 +38,13 @@ class DashboardController extends Controller
                 ->with('schoolClass')->limit(20)->get(),
             'activities' => $q === '' ? collect() : Activity::query()->where('title', 'like', "%{$q}%")->limit(20)->get(),
         ]);
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        $request->session()->put('notifications_seen_at', now()->toIso8601String());
+
+        return back();
     }
 
     public function device(HardwareService $hardware)

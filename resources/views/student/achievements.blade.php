@@ -31,6 +31,21 @@
   @endforeach
 </div>
 
+<section class="card" style="margin-top:18px">
+  <div class="card-title"><h3><x-icon name="crown" style="color:var(--yellow)" /> Ranking da minha turma</h3><span class="chip gray">Partidas concluídas</span></div>
+  @if ($ranking->isEmpty())
+    <p class="muted small">{{ $me->school_class_id ? 'Ninguém da turma concluiu partidas ainda. Seja o primeiro!' : 'Você ainda não está em uma turma. Peça ao seu professor para te adicionar.' }}</p>
+  @else
+    <div class="stack" style="gap:6px">
+      @foreach ($ranking as $r)
+        <div class="rank-row" style="{{ $r->id === $me->id ? 'outline:2px solid var(--blue)' : '' }}"><span class="rank-pos">{{ $r->rank }}</span><x-avatar :key="$r->avatar" :name="$r->name" size="sm" />
+          <div class="grow"><b class="small">{{ $r->name }}{{ $r->id === $me->id ? ' (você)' : '' }}</b><div class="tiny muted">{{ $r->accuracy }}% de acertos · {{ $r->matches }} partidas</div></div>
+          <b>⭐ {{ number_format($r->points, 0, ',', '.') }}</b></div>
+      @endforeach
+    </div>
+  @endif
+</section>
+
 <section class="card soft-blue row between wrap" style="margin-top:18px">
   <div><h3 style="margin:0"><x-icon name="sparkles" /> Continue explorando!</h3><p class="muted" style="margin:0">Cada desafio é uma nova descoberta.</p></div>
   <a class="btn btn-primary" href="{{ route('activities') }}">Ver atividades <x-icon name="arrow-right" /></a>

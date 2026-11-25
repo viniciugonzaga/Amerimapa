@@ -9,9 +9,9 @@
       <h1 class="welcome-title">Bem-vindo ao<br><span class="rainbow">AmeriMapa!</span></h1>
       <p class="muted" style="font-size:1.1rem;max-width:560px">Uma plataforma interativa que une tecnologia, educação e inclusão para tornar o aprendizado de geografia mais acessível, divertido e significativo para todos.</p>
 
-      <div class="map-box" style="max-width:560px;margin:22px 0;padding:14px">
-        <span class="handwrite" style="position:absolute;left:14px;top:10px">Geografia tátil e interativa!</span>
-        @include('partials.americas-map')
+      <div style="position:relative;max-width:560px;margin:18px 0">
+        <img src="{{ asset('images/ilustracao-boas-vindas.png') }}" alt="Duas crianças explorando o mapa tátil das Américas" style="width:100%;max-width:420px;border-radius:22px;display:block">
+        <span class="handwrite" style="position:absolute;right:10px;top:8px">Geografia tátil e interativa!</span>
       </div>
 
       <div class="grid g-4" style="max-width:560px">

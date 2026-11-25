@@ -35,7 +35,7 @@
 
 <div class="grid g-3" style="margin-top:18px">
   <section class="card">
-    <div class="card-title"><h3><x-icon name="chart" style="color:var(--blue)" /> Minha evolução</h3><span class="chip gray">Últimos 7 dias</span></div>
+    <div class="card-title"><h3><x-icon name="chart" style="color:var(--blue)" /> Minha evolução</h3>@include('partials.period-select')</div>
     @php($chartData = ['title' => 'Acertos por dia (%)', 'labels' => $s['evolution']['labels'], 'series' => [['name' => 'Acertos', 'color' => 'blue', 'values' => $s['evolution']['values']]]])
     <div class="chart" data-chart='@json($chartData)'></div>
     <p class="tiny muted">Porcentagem de acertos por dia.</p>
@@ -44,7 +44,7 @@
   <section class="card soft-yellow">
     <div class="card-title"><h3><x-icon name="bulb" style="color:var(--yellow)" /> Vamos revisar?</h3></div>
     @if ($r = $s['review'])
-      <div class="act"><div class="ico" style="background:#fff"><x-icon :name="$r->icon" /></div><div><b>{{ $r->title }}</b><p class="small muted">Seu melhor resultado foi {{ $r->best_percent }}%. Pratique mais uma vez para avançar!</p></div></div>
+      <div class="act"><img src="{{ asset('images/ilustracao-revisar.png') }}" alt="" style="width:96px;border-radius:12px"><div><b>{{ $r->title }}</b><p class="small muted">Seu melhor resultado foi {{ $r->best_percent }}%. Pratique mais uma vez para avançar!</p></div></div>
       <a class="btn btn-primary btn-block" href="{{ route('play', ['atividade' => $r->id, 'modo' => \App\Models\GameMode::byCode('TRAINING')?->id]) }}"><x-icon name="play" class="fill" /> Revisar conteúdo</a>
     @else
       <p class="muted">Conclua uma atividade e eu sugiro o que revisar.</p>

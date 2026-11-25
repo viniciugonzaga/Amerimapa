@@ -46,8 +46,17 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'E-mail ou senha inválidos.'])->onlyInput('email', 'role');
         }
 
-        $request->session()->regenerate();
         $user = $request->user();
+        $role = $data['role'] ?? null;
+        if (($role === 'teacher' && ! $user->isStaff()) || ($role === 'student' && $user->isStaff())) {
+            Auth::logout();
+
+            return back()->withErrors(['email' => $role === 'teacher'
+                ? 'Esta conta é de aluno. Selecione "Aluno" para entrar.'
+                : 'Esta conta é de professor. Selecione "Professor" para entrar.'])->onlyInput('email', 'role');
+        }
+
+        $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
         $request->session()->forget('guest_id');
         $request->session()->put('api_token', $this->tokens->issueForPlayer($user));
@@ -75,7 +84,7 @@ class AuthController extends Controller
             'email' => mb_strtolower(trim($data['email'])),
             'password_hash' => $data['password'],
             'role' => User::STUDENT,
-            'avatar' => User::AVATARS[array_rand(User::AVATARS)],
+            'avatar' => ['menina', 'menino'][random_int(0, 1)],
         ]);
         PlayerPreference::query()->create(['player_id' => $user->id] + PlayerPreference::DEFAULTS);
 
@@ -103,6 +112,25 @@ class AuthController extends Controller
     public function forgot()
     {
         return view('auth.forgot');
+    }
+
+    /**
+     * Sem e-mail configurado na escola: o pedido aparece nas notificações
+     * do professor da turma, que define a nova senha em Turmas e alunos.
+     */
+    public function requestReset(Request $request)
+    {
+        $data = $request->validate(['email' => 'required|email'], [], ['email' => 'e-mail']);
+        $email = mb_strtolower(trim($data['email']));
+        if (User::query()->where('email', $email)->exists()) {
+            \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $email],
+                ['token' => hash('sha256', Str::random(40)), 'created_at' => now()],
+            );
+        }
+
+        // Mesma resposta exista ou não o e-mail (não revela contas).
+        return back()->with('status', 'Pedido enviado! Seu professor ou professora vai criar uma nova senha para você.');
     }
 
     public function logout(Request $request)

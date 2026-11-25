@@ -121,7 +121,8 @@
     const y = (v) => T + (H - T - B) * (1 - v / 100);
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(data.title || 'Gráfico')}">`;
     [0, 25, 50, 75, 100].forEach((v) => { svg += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; });
-    labels.forEach((l, i) => { svg += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${esc(l)}</text>`; });
+    const step = Math.ceil(labels.length / 8);
+    labels.forEach((l, i) => { if (i % step && i !== labels.length - 1) return; svg += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${esc(l)}</text>`; });
     series.forEach((s) => {
       const color = PALETTE[s.color] || s.color || PALETTE.blue;
       const pts = s.values.map((v, i) => (v === null || v === undefined ? null : [x(i), y(v)])).filter(Boolean);
@@ -133,7 +134,7 @@
     });
     svg += '</svg>';
     if (series.length > 1) svg += '<div class="legend">' + series.map((s) => `<span><i style="background:${PALETTE[s.color] || s.color}"></i>${esc(s.name)}</span>`).join('') + '</div>';
-    if (!series.some((s) => s.values.some((v) => v !== null))) svg += '<p class="small muted center">Ainda não há partidas nos últimos 7 dias.</p>';
+    if (!series.some((s) => s.values.some((v) => v !== null))) svg += '<p class="small muted center">Ainda não há partidas neste período.</p>';
     el.innerHTML = svg;
   }
   $$('[data-chart]').forEach(lineChart);

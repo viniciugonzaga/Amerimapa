@@ -89,9 +89,9 @@ php vendor/bin/phpunit
 
 ## 3. Telas
 
-**Entrada:** login/landing (Aluno/Professor, lembrar-me, criar conta, jogar como visitante), cadastro, esqueci a senha, termos, privacidade, suporte, documentação da API (`/docs/api`).
+**Entrada:** login/landing (a aba Aluno/Professor é conferida no login, lembrar-me, criar conta, jogar como visitante), cadastro, esqueci a senha (o pedido aparece nas notificações do professor da turma), termos, privacidade, suporte, documentação da API (`/docs/api`).
 
-**Aluno** (navegação inferior: Início · Atividade · Progresso · Conquistas):
+**Aluno** (navegação inferior: Início · Atividade · Progresso · Conquistas · Perfil):
 
 | Tela | Rota | O que tem |
 |---|---|---|
@@ -100,11 +100,11 @@ php vendor/bin/phpunit
 | Jogar | `/jogar` | pergunta, barra de perguntas, status do mapa físico, mapa SVG clicável com zoom na região, lista acessível, ouvir instruções, cronômetro (Desafio), feedback colorido + voz, pontos |
 | Exploração | `/explorar` | toque em qualquer país (tela ou mapa tátil) e veja capital, idioma e curiosidade |
 | Resultado | `/partidas/{id}/resultado` | pontos, acertos, sequência, resposta por pergunta, novas conquistas |
-| Progresso | `/progresso` | anel de progresso, atividades concluídas, evolução 7 dias, "Vamos revisar?", fases |
-| Conquistas | `/conquistas` | 6 emblemas com progresso |
-| Perfil e acessibilidade | `/perfil` | avatar, apelido, e-mail, senha, fonte maior, alto contraste, áudio, reduzir animações, tutorial em áudio |
+| Progresso | `/progresso` | anel de progresso, atividades concluídas, evolução (7/15/30 dias), "Vamos revisar?", fases |
+| Conquistas | `/conquistas` | 6 emblemas com progresso + ranking da turma |
+| Perfil e acessibilidade | `/perfil` | cartão do perfil com "Editar perfil" (avatar ilustrado, apelido, e-mail, senha), fonte maior, alto contraste, áudio, reduzir animações, tutorial em áudio |
 
-**Professor** (menu lateral): Visão geral (KPIs, gráfico por turma, atividades recentes, turmas, acesso rápido, dispositivo IoT, ranking), Turmas e alunos (CRUD + cadastro de alunos e troca de senha), Atividades do mapa (CRUD com seletor de perguntas + **Modo Sala de Aula**), Perguntas (CRUD), Regiões e pinos (trocar o pino de cada país), Desempenho e ranking (onde a turma mais erra), Relatórios (exportação CSV para Excel), Dispositivo IoT (status em tempo real e últimos eventos), busca.
+**Professor** (menu lateral): Visão geral (KPIs, gráfico por turma com período 7/15/30 dias, notificações no sino, atividades recentes, turmas, acesso rápido, dispositivo IoT, ranking), Turmas e alunos (CRUD + cadastro de alunos e troca de senha), Atividades do mapa (CRUD com seletor de perguntas + **Modo Sala de Aula**), Perguntas (CRUD), Regiões e pinos (trocar o pino de cada país), Desempenho e ranking (onde a turma mais erra), Relatórios (exportação CSV para Excel), Dispositivo IoT (status em tempo real e últimos eventos), busca. O **administrador** tem também a tela **Professores** (cadastrar, editar, trocar senha e remover professores).
 
 ## 4. Regras de negócio → código
 
@@ -186,6 +186,11 @@ public/css/amerimapa.css, public/js/amerimapa.js   front sem build (cliente da A
 routes/api.php, routes/web.php
 tests/Unit, tests/Feature
 ```
+
+### Imagens
+
+Ficam em `public/images/`: `Amerimapa.png` (logo usado no topo, menu lateral e rodapé), `Amerimapa-icone.png` (ícone da aba), as ilustrações `ilustracao-*.png` e os avatares `avatars/menina.png`, `menino.png`, `professora.png`.
+Elas foram recortadas das telas do protótipo; para trocar por versões em alta resolução basta substituir os arquivos **com o mesmo nome**.
 
 O desenho do mapa (`resources/views/partials/americas-map.blade.php`) foi gerado a partir dos contornos do projeto *mledoze/countries* (licença ODbL).
 

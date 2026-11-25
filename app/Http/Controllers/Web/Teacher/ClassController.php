@@ -37,6 +37,7 @@ class ClassController extends Controller
             'report' => $this->stats->classReport($ids),
             'activities' => $class->activities()->withCount('questions')->get(),
             'chart' => $this->stats->dailyAccuracy(fn ($q) => $q->whereIn('player_id', $ids)),
+            'resetRequests' => \Illuminate\Support\Facades\DB::table('password_reset_tokens')->pluck('email')->flip(),
         ]);
     }
 
@@ -66,7 +67,7 @@ class ClassController extends Controller
         ], [], ['name' => 'nome', 'email' => 'e-mail', 'password' => 'senha']);
         User::query()->create([
             'name' => $data['name'], 'email' => mb_strtolower($data['email']), 'password_hash' => $data['password'],
-            'role' => User::STUDENT, 'school_class_id' => $class->id, 'avatar' => User::AVATARS[array_rand(User::AVATARS)],
+            'role' => User::STUDENT, 'school_class_id' => $class->id, 'avatar' => ['menina', 'menino'][random_int(0, 1)],
         ]);
 
         return back()->with('status', 'Aluno(a) cadastrado(a) na turma!');
@@ -87,6 +88,7 @@ class ClassController extends Controller
         $update = ['name' => $data['name'], 'email' => mb_strtolower($data['email']), 'school_class_id' => $data['school_class_id'] ?? null];
         if (! empty($data['password'])) {
             $update['password_hash'] = $data['password'];
+            \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $student->email)->delete();
         }
         $student->update($update);
 

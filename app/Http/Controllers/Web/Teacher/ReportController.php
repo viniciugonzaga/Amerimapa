@@ -22,7 +22,8 @@ class ReportController extends Controller
             'class' => $class,
             'ranking' => $this->stats->ranking($ids, 20),
             'hardest' => $this->stats->hardestQuestions($ids),
-            'chart' => $this->stats->dailyAccuracy(fn ($q) => $q->whereIn('player_id', $ids)),
+            'chart' => $this->stats->dailyAccuracy(fn ($q) => $q->whereIn('player_id', $ids), StatsService::period($request->query('periodo'))),
+            'days' => StatsService::period($request->query('periodo')),
         ]);
     }
 

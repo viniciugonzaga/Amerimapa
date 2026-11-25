@@ -45,6 +45,7 @@
             ['activities', 'clipboard', 'Atividade', 'atividades*'],
             ['progress', 'chart', 'Progresso', 'progresso'],
             ['achievements', 'trophy', 'Conquistas', 'conquistas'],
+            ['profile', 'user', 'Perfil', 'perfil'],
         ];
     @endphp
     @foreach ($nav as [$route, $icon, $label, $pattern])

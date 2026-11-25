@@ -5,7 +5,7 @@
   <aside class="t-side" id="t-side">
     <x-logo />
     <nav class="t-nav" aria-label="Menu do professor">
-      @foreach ([
+      @foreach (array_merge([
         ['teacher.dashboard', 'home', 'Visão geral', 'professor'],
         ['teacher.classes.index', 'users', 'Turmas e alunos', 'professor/turmas*'],
         ['teacher.activities.index', 'map', 'Atividades do mapa', 'professor/atividades*'],
@@ -14,7 +14,7 @@
         ['teacher.performance', 'trophy', 'Desempenho e ranking', 'professor/desempenho*'],
         ['teacher.reports', 'file', 'Relatórios', 'professor/relatorios*'],
         ['teacher.device', 'cpu', 'Dispositivo IoT', 'professor/dispositivo*'],
-      ] as [$route, $icon, $label, $pattern])
+      ], $me->role === \App\Models\User::ADMIN ? [['teacher.teachers.index', 'book', 'Professores', 'professor/professores*']] : []) as [$route, $icon, $label, $pattern])
         <a href="{{ route($route) }}" class="{{ request()->is($pattern) ? 'active' : '' }}"><x-icon :name="$icon" /> {{ $label }}</a>
       @endforeach
     </nav>
@@ -30,7 +30,29 @@
         <div class="input-icon"><x-icon name="search" /><input class="input" type="search" name="q" value="{{ request('q') }}" placeholder="Buscar por turma, aluno ou atividade..." aria-label="Buscar"></div>
       </form>
       <div class="grow"></div>
-      <a class="icon-btn" href="{{ route('teacher.device') }}" aria-label="Dispositivo"><x-icon name="bell" /></a>
+      @php
+          $notifications = app(\App\Services\StatsService::class)->notificationsFor($me);
+          $seenAt = session('notifications_seen_at');
+          $unread = $notifications->filter(fn ($n) => ! $seenAt || $n['at']->gt(\Illuminate\Support\Carbon::parse($seenAt)))->count();
+      @endphp
+      <div class="usermenu" data-dropdown>
+        <button type="button" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notificações ({{ $unread }} novas)">
+          <x-icon name="bell" />@if ($unread)<span class="badge-dot">{{ $unread }}</span>@endif
+        </button>
+        <div class="dropdown" role="menu" style="min-width:340px;max-width:380px">
+          <div class="row between" style="padding:8px 10px"><b>Notificações</b>
+            @if ($unread)<form method="POST" action="{{ route('teacher.notifications.read') }}">@csrf<button type="submit" class="small" style="padding:0;color:var(--blue)">Marcar como lidas</button></form>@endif
+          </div>
+          @forelse ($notifications as $n)
+            <a href="{{ $n['url'] ?? '#' }}" style="align-items:flex-start;font-weight:600">
+              <span class="chip {{ $n['color'] }}" style="padding:6px"><x-icon :name="$n['icon']" /></span>
+              <span class="small">{{ $n['text'] }}<br><span class="tiny muted">{{ $n['at']->diffForHumans() }}</span></span>
+            </a>
+          @empty
+            <p class="small muted" style="padding:10px">Nenhuma novidade por enquanto.</p>
+          @endforelse
+        </div>
+      </div>
       <div class="usermenu" data-dropdown>
         <button type="button" aria-haspopup="true" aria-expanded="false">
           <x-avatar :user="$me" />

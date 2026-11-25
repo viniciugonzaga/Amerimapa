@@ -39,7 +39,7 @@ class DemoSeeder extends Seeder
             'name' => 'Administração AmeriMapa', 'role' => User::ADMIN, 'password_hash' => config('amerimapa.seed_admin_password'), 'avatar' => 'estrela',
         ]);
         $teacher = User::query()->updateOrCreate(['email' => 'mariana@amerimapa.com'], [
-            'name' => 'Mariana Rigueiro', 'nickname' => 'Prof. Mariana', 'role' => User::TEACHER, 'password_hash' => self::PASSWORD, 'avatar' => 'flor',
+            'name' => 'Mariana Rigueiro', 'nickname' => 'Prof. Mariana', 'role' => User::TEACHER, 'password_hash' => self::PASSWORD, 'avatar' => 'professora',
         ]);
 
         $classes = [];
@@ -50,7 +50,7 @@ class DemoSeeder extends Seeder
         // Alunos
         $sofia = User::query()->updateOrCreate(['email' => 'sofia@amerimapa.com'], [
             'name' => 'Sofia Almeida', 'nickname' => 'Sofia', 'role' => User::STUDENT, 'password_hash' => self::PASSWORD,
-            'avatar' => 'sol', 'school_class_id' => $classes[1][0]->id,
+            'avatar' => 'menina', 'school_class_id' => $classes[1][0]->id,
         ]);
         PlayerPreference::query()->updateOrCreate(['player_id' => $sofia->id], PlayerPreference::DEFAULTS);
 
@@ -62,7 +62,7 @@ class DemoSeeder extends Seeder
                 $email = 'aluno'.($n + 1).'@amerimapa.com';
                 $students[] = User::query()->updateOrCreate(['email' => $email], [
                     'name' => $name, 'role' => User::STUDENT, 'password_hash' => self::PASSWORD,
-                    'avatar' => User::AVATARS[$n % count(User::AVATARS)], 'school_class_id' => $class->id,
+                    'avatar' => $n % 2 === 0 ? 'menino' : 'menina', 'school_class_id' => $class->id,
                 ]);
             }
         }
@@ -129,6 +129,9 @@ class DemoSeeder extends Seeder
 
         $scoring = new ScoringPolicy;
         $start = Carbon::today()->subDays($daysAgo)->setTime(mt_rand(8, 16), mt_rand(0, 59));
+        if ($start->gt(now()->subHour())) {
+            $start = now()->subMinutes(mt_rand(60, 240)); // nunca no futuro
+        }
         $time = $start->copy();
         $match = GameMatch::query()->create([
             'player_id' => $player->id, 'mode_id' => $mode->id, 'phase_id' => $activity->phase_id,

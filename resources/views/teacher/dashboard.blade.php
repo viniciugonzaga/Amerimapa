@@ -19,7 +19,7 @@
 
     <div class="grid g-main">
       <section class="card">
-        <div class="card-title"><h3><x-icon name="chart" /> Desempenho da turma</h3><span class="chip gray">Últimos 7 dias</span></div>
+        <div class="card-title"><h3><x-icon name="chart" /> Desempenho da turma</h3>@include('partials.period-select')</div>
         <div class="row" style="margin-bottom:8px"><x-ring :percent="$c['accuracy']" size="sm" /><div><b>Média geral de acertos</b><div class="small muted">acertos (%) por dia em cada turma</div></div></div>
         <div class="chart" data-chart='@json($o['chart'])'></div>
       </section>
@@ -77,7 +77,7 @@
       <p class="tiny muted">Os melhores alunos das suas turmas (partidas concluídas).</p>
       <div class="stack" style="gap:6px">
         @forelse ($o['ranking']->take(3) as $r)
-          <div class="rank-row"><span class="rank-pos">{{ $r->rank }}</span><span class="avatar sm av-{{ $r->avatar }}">{{ mb_substr($r->name, 0, 1) }}</span><div class="grow"><b class="small">{{ $r->name }}</b><div class="tiny muted">⭐ {{ number_format($r->points, 0, ',', '.') }} pontos</div></div><span class="chip gray">{{ $r->rank }}º lugar</span></div>
+          <div class="rank-row"><span class="rank-pos">{{ $r->rank }}</span><x-avatar :key="$r->avatar" :name="$r->name" size="sm" /><div class="grow"><b class="small">{{ $r->name }}</b><div class="tiny muted">⭐ {{ number_format($r->points, 0, ',', '.') }} pontos</div></div><span class="chip gray">{{ $r->rank }}º lugar</span></div>
         @empty
           <div class="empty small">Sem partidas concluídas ainda.</div>
         @endforelse
